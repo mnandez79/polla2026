@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CTT - Polla Mundial 2026</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f5f6f8; margin:0; color:#18202a; }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 24px; }
+    h1 { margin-bottom: 4px; }
+    .note { color:#52616f; margin-top:0; line-height:1.35; }
+    .card { background:white; border-radius:14px; padding:18px; margin:16px 0; box-shadow:0 2px 10px rgba(0,0,0,.06); }
+    .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:14px; }
+    label { font-weight:700; display:block; margin:10px 0 5px; }
+    input, select { width:100%; padding:10px; border:1px solid #ccd3dd; border-radius:9px; font-size:15px; box-sizing:border-box; background:white; }
+    .group-title { font-size:18px; font-weight:800; margin:0 0 8px; }
+    .teams { font-size:13px; color:#52616f; margin-bottom:8px; }
+    .third-hint { font-size:12px; color:#697386; margin-top:5px; }
+    button { background:#172b4d; color:white; border:none; padding:13px 18px; border-radius:10px; font-size:16px; cursor:pointer; margin:8px 8px 0 0; }
+    button.secondary { background:#697386; }
+    .error { color:#b00020; font-weight:700; margin-top:10px; }
+    .success { color:#167c3b; font-weight:700; margin-top:10px; }
+    .best-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:10px; margin-top:12px; }
+    .best-item { display:flex; align-items:center; gap:10px; padding:12px; border:1px solid #e2e7ef; border-radius:12px; background:#fbfcfe; }
+    .best-item input { width:auto; transform:scale(1.15); }
+    .best-item.disabled { opacity:.45; }
+    .best-label { font-weight:700; }
+    .third-count { font-weight:800; color:#172b4d; }
+    textarea { width:100%; min-height:190px; margin-top:12px; font-family:monospace; border-radius:10px; padding:10px; box-sizing:border-box; }
+    small { color:#697386; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>CTT - Polla Mundial 2026</h1>
+    <p class="note">Selecciona el 1º, 2º y 3º lugar de cada grupo. El dropdown del 3º lugar solo mostrará los dos equipos que no fueron escogidos como 1º o 2º. Luego marca exactamente 8 equipos como mejores terceros.</p>
+
+    <div class="card">
+      <label>Nombre del participante</label>
+      <input id="participant" placeholder="Ej. Natalia" required />
+      <label>Email del participante</label>
+      <input id="participantEmail" type="email" placeholder="Ej. nombre@email.com" />
+      <small>Las respuestas se guardan automáticamente en el Google Sheet privado del administrador.</small>
+    </div>
+
+    <form id="predictionForm">
+      <div id="groups" class="grid"></div>
+
+      <div class="card">
+        <h2>Marca los 8 mejores terceros</h2>
+        <p class="note">Aquí ya no escoges grupos. Cada casilla muestra el <strong>equipo exacto</strong> que seleccionaste como 3º en cada grupo. Solo puedes marcar 8.</p>
+        <p class="third-count">Mejores terceros marcados: <span id="thirdCount">0</span>/8</p>
+        <div id="bestThirds" class="best-grid"></div>
+      </div>
+
+      <button type="submit" id="submitBtn">Enviar predicción</button>
+      <button type="button" class="secondary" onclick="downloadCSV()">Descargar CSV de respaldo</button>
+      <div id="msg"></div>
+      <textarea id="output" readonly placeholder="Aquí aparecerá el resumen después de enviar o descargar respaldo."></textarea>
+    </form>
+  </div>
+
+<script>
+// Después de publicar Google Apps Script, pega aquí el URL de la Web App.
+const SCRIPT_URL = "PASTE_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE";
+
+const GROUPS = {
+  A: ['Mexico', 'South Korea', 'South Africa', 'Czechia'],
+  B: ['Canada', 'Switzerland', 'Qatar', 'Bosnia-Herzegovina'],
+  C: ['Brazil', 'Morocco', 'Scotland', 'Haiti'],
+  D: ['USA', 'Paraguay', 'Australia', 'Turkiye'],
+  E: ['Germany', 'Ecuador', 'Ivory Coast', 'Curacao'],
+  F: ['Netherlands', 'Japan', 'Tunisia', 'Sweden'],
+  G: ['Belgium', 'Iran', 'Egypt', 'New Zealand'],
+  H: ['Spain', 'Uruguay', 'Saudi Arabia', 'Cape Verde'],
+  I: ['France', 'Senegal', 'Norway', 'Iraq'],
+  J: ['Argentina', 'Austria', 'Algeria', 'Jordan'],
+  K: ['Portugal', 'Colombia', 'Uzbekistan', 'DR Congo'],
+  L: ['England', 'Croatia', 'Panama', 'Ghana']
+};
+
+function optionList(teams, placeholder='Selecciona') {
+  return `<option value="">${placeholder}</option>` + teams.map(t => `<option value="${t}">${t}</option>`).join('');
+}
+
+const groupsDiv = document.getElementById('groups');
+Object.entries(GROUPS).forEach(([g, teams]) => {
+  groupsDiv.innerHTML += `
+    <div class="card">
+      <div class="group-title">Grupo ${g}</div>
+      <div class="teams">${teams.join(' · ')}</div>
+      <label>1er lugar</label>
+      <select id="${g}_first" class="group-select">${optionList(teams)}</select>
+      <label>2do lugar</label>
+      <select id="${g}_second" class="group-select">${optionList(teams)}</select>
+      <label>3er lugar</label>
+      <select id="${g}_third" class="third-place-team" disabled>
+        <option value="">Primero escoge 1º y 2º</option>
+      </select>
+      <div class="third-hint" id="${g}_hint">El 3º lugar se limitará a los 2 equipos restantes.</div>
+    </div>`;
+});
+
+const bestThirdsDiv = document.getElementById('bestThirds');
+Object.keys(GROUPS).forEach(g => {
+  bestThirdsDiv.innerHTML += `
+    <label class="best-item disabled" id="best_item_${g}">
+      <input type="checkbox" id="${g}_best" class="best-third-check" disabled />
+      <span class="best-label" id="${g}_best_label">Grupo ${g}: escoge 3º lugar</span>
+    </label>`;
+});
+
+function updateGroup(group) {
+  const teams = GROUPS[group];
+  const firstSel = document.getElementById(`${group}_first`);
+  const secondSel = document.getElementById(`${group}_second`);
+  const thirdSel = document.getElementById(`${group}_third`);
+  const bestCheck = document.getElementById(`${group}_best`);
+  const bestLabel = document.getElementById(`${group}_best_label`);
+  const hint = document.getElementById(`${group}_hint`);
+
+  const first = firstSel.value;
+  const second = secondSel.value;
+  const previousThird = thirdSel.value;
+
+  Array.from(firstSel.options).forEach(opt => { opt.disabled = opt.value && opt.value === second; });
+  Array.from(secondSel.options).forEach(opt => { opt.disabled = opt.value && opt.value === first; });
+
+  if (first && second && first !== second) {
+    const remaining = teams.filter(t => t !== first && t !== second);
+    thirdSel.innerHTML = optionList(remaining, 'Selecciona 3º lugar');
+    thirdSel.disabled = false;
+    if (remaining.includes(previousThird)) thirdSel.value = previousThird;
+    hint.textContent = `Opciones disponibles para 3º: ${remaining.join(' o ')}`;
+  } else {
+    thirdSel.innerHTML = '<option value="">Primero escoge 1º y 2º distintos</option>';
+    thirdSel.disabled = true;
+    bestCheck.checked = false;
+    hint.textContent = 'El 3º lugar se limitará a los 2 equipos restantes.';
+  }
+
+  const third = thirdSel.value;
+  if (third) {
+    bestLabel.textContent = `Grupo ${group}: ${third}`;
+  } else {
+    bestLabel.textContent = `Grupo ${group}: escoge 3º lugar`;
+    bestCheck.checked = false;
+  }
+}
+
+function enforceBestThirdLimit() {
+  const checks = Array.from(document.querySelectorAll('.best-third-check'));
+  const checked = checks.filter(c => c.checked).length;
+  document.getElementById('thirdCount').textContent = checked;
+
+  checks.forEach(c => {
+    const group = c.id.split('_')[0];
+    const thirdTeam = document.getElementById(`${group}_third`).value;
+    const blockBecauseLimit = !c.checked && checked >= 8;
+    c.disabled = !thirdTeam || blockBecauseLimit;
+    document.getElementById(`best_item_${group}`).classList.toggle('disabled', !thirdTeam || blockBecauseLimit);
+  });
+}
+
+function updateAll() {
+  Object.keys(GROUPS).forEach(updateGroup);
+  enforceBestThirdLimit();
+}
+
+document.addEventListener('change', function(e) {
+  if (e.target.matches('select, input[type="checkbox"]')) updateAll();
+});
+updateAll();
+
+function collectData() {
+  const participant = document.getElementById('participant').value.trim();
+  const participantEmail = document.getElementById('participantEmail').value.trim();
+  const picks = {};
+  const bestThirds = [];
+  const errors = [];
+
+  if (!participant) errors.push('Falta el nombre del participante.');
+
+  Object.keys(GROUPS).forEach(g => {
+    const first = document.getElementById(`${g}_first`).value;
+    const second = document.getElementById(`${g}_second`).value;
+    const third = document.getElementById(`${g}_third`).value;
+    const isBest = document.getElementById(`${g}_best`).checked;
+    const remaining = GROUPS[g].filter(t => t !== first && t !== second);
+
+    if (!first || !second) errors.push(`Faltan 1º/2º en el Grupo ${g}.`);
+    if (first && second && first === second) errors.push(`En el Grupo ${g}, el 1º y 2º no pueden ser el mismo equipo.`);
+    if (first && second && first !== second && !third) errors.push(`Falta escoger el 3º lugar exacto en el Grupo ${g}.`);
+    if (third && !remaining.includes(third)) errors.push(`En el Grupo ${g}, el 3º debe ser uno de los dos equipos no elegidos como 1º o 2º.`);
+    if (isBest && !third) errors.push(`Marcaste mejor tercero en el Grupo ${g}, pero falta el equipo exacto.`);
+
+    picks[g] = { primero: first, segundo: second, tercero: third, terceroClasifica: isBest ? 'SI' : 'NO' };
+    if (isBest && third) bestThirds.push({ grupo: g, equipo: third });
+  });
+
+  if (bestThirds.length !== 8) errors.push(`Debes marcar exactamente 8 equipos como mejores terceros. Marcaste ${bestThirds.length}.`);
+
+  return { participant, participantEmail, picks, bestThirds, errors, submittedAt: new Date().toISOString() };
+}
+
+function formatText(data) {
+  let lines = [`Participante: ${data.participant}`, `Email: ${data.participantEmail || ''}`, `Fecha: ${new Date().toLocaleString()}`, '', 'Predicción por grupo:'];
+  Object.entries(data.picks).forEach(([g, p]) => lines.push(`Grupo ${g}: 1) ${p.primero} | 2) ${p.segundo} | 3) ${p.tercero} | Mejor tercero: ${p.terceroClasifica}`));
+  lines.push('', '8 mejores terceros exactos:');
+  data.bestThirds.forEach((x, i) => lines.push(`${i+1}. ${x.equipo} (Grupo ${x.grupo})`));
+  return lines.join('\n');
+}
+
+function formatCSV(data) {
+  const headers = ['Timestamp', 'Participante', 'Email'];
+  const row = [data.submittedAt, data.participant, data.participantEmail || ''];
+  Object.keys(GROUPS).forEach(g => {
+    headers.push(`${g}_Primero`, `${g}_Segundo`, `${g}_Tercero`, `${g}_Tercero_Clasifica`);
+    row.push(data.picks[g].primero, data.picks[g].segundo, data.picks[g].tercero, data.picks[g].terceroClasifica);
+  });
+  headers.push('Mejores_Terceros_Exactos');
+  row.push(data.bestThirds.map(x => `${x.equipo} (Grupo ${x.grupo})`).join('|'));
+  return headers.join(',') + '\n' + row.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',');
+}
+
+function showMessage(text, cls) {
+  const msg = document.getElementById('msg');
+  msg.className = cls;
+  msg.textContent = text;
+}
+
+document.getElementById('predictionForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const data = collectData();
+  if (data.errors.length) { showMessage(data.errors.join(' '), 'error'); return; }
+  if (!SCRIPT_URL || SCRIPT_URL.includes('PASTE_GOOGLE_APPS_SCRIPT')) {
+    showMessage('Falta configurar el URL de Google Apps Script antes de publicar.', 'error');
+    document.getElementById('output').value = formatText(data);
+    return;
+  }
+
+  const submitBtn = document.getElementById('submitBtn');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Enviando...';
+  document.getElementById('output').value = formatText(data);
+
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(data)
+    });
+    showMessage('Predicción enviada. Gracias.', 'success');
+    submitBtn.textContent = 'Enviado';
+  } catch (err) {
+    showMessage('No se pudo enviar automáticamente. Descarga el CSV de respaldo y avisa al administrador.', 'error');
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Enviar predicción';
+  }
+});
+
+function downloadCSV() {
+  const data = collectData();
+  if (data.errors.length) { showMessage(data.errors.join(' '), 'error'); return; }
+  const blob = new Blob([formatCSV(data)], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `predicciones_mundial_2026_${data.participant.replace(/\s+/g,'_')}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  document.getElementById('output').value = formatText(data);
+  showMessage('CSV descargado con los 8 equipos exactos.', 'success');
+}
+</script>
+</body>
+</html>
