@@ -245,14 +245,22 @@ document.getElementById('predictionForm').addEventListener('submit', async funct
   document.getElementById('output').value = formatText(data);
 
   try {
-    await fetch(SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(data)
-    });
-    showMessage('Predicción enviada. Gracias.', 'success');
-    submitBtn.textContent = 'Enviado';
+    const response = await fetch(SCRIPT_URL, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(data)
+});
+
+const result = await response.json();
+
+if (result.status === 'success') {
+  showMessage('Predicción enviada. Gracias.', 'success');
+  submitBtn.textContent = 'Enviado';
+} else {
+  throw new Error(result.message || 'Error desconocido');
+}
   } catch (err) {
     showMessage('No se pudo enviar automáticamente. Descarga el CSV de respaldo y avisa al administrador.', 'error');
     submitBtn.disabled = false;
