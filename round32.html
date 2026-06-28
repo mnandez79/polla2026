@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CTT - Polla Mundial 2026 | Round of 32</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f5f6f8; margin:0; color:#18202a; }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 24px; }
+    h1 { margin-bottom: 4px; }
+    .note { color:#52616f; margin-top:0; line-height:1.35; }
+    .card { background:white; border-radius:14px; padding:18px; margin:16px 0; box-shadow:0 2px 10px rgba(0,0,0,.06); }
+    .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap:14px; }
+    label { font-weight:700; display:block; margin:10px 0 5px; }
+    input, select { width:100%; padding:10px; border:1px solid #ccd3dd; border-radius:9px; font-size:15px; box-sizing:border-box; background:white; }
+    .game-title { font-size:17px; font-weight:800; margin:0 0 6px; }
+    .game-meta { font-size:13px; color:#52616f; margin-bottom:10px; }
+    .matchup { font-weight:700; margin:8px 0; }
+    button { background:#172b4d; color:white; border:none; padding:13px 18px; border-radius:10px; font-size:16px; cursor:pointer; margin:8px 8px 0 0; }
+    button.secondary { background:#697386; }
+    .error { color:#b00020; font-weight:700; margin-top:10px; }
+    .success { color:#167c3b; font-weight:700; margin-top:10px; }
+    textarea { width:100%; min-height:190px; margin-top:12px; font-family:monospace; border-radius:10px; padding:10px; box-sizing:border-box; }
+    small { color:#697386; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>CTT - Polla Mundial 2026 | Round of 32</h1>
+    <p class="note">Selecciona el ganador de cada uno de los 16 partidos. Las respuestas se guardan automáticamente en el Google Sheet privado del administrador.</p>
+
+    <div class="card">
+      <label>Nombre del participante</label>
+      <input id="participant" placeholder="Ej. Natalia" required />
+      <label>Email del participante</label>
+      <input id="participantEmail" type="email" placeholder="Ej. nombre@email.com" />
+      <small>Solo el administrador verá las respuestas consolidadas.</small>
+    </div>
+
+    <form id="predictionForm">
+      <div id="games" class="grid"></div>
+      <button type="submit" id="submitBtn">Enviar predicción</button>
+      <button type="button" class="secondary" onclick="downloadCSV()">Descargar CSV de respaldo</button>
+      <div id="msg"></div>
+      <textarea id="output" readonly placeholder="Aquí aparecerá el resumen después de enviar o descargar respaldo."></textarea>
+    </form>
+  </div>
+
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzwQRejWXRhBy3-L6vFcKRlpDnSN2bKfNpmWx6uwXuQyRfX3QAkA9q2GinKqhbZO9BY/exec";
+
+const GAMES = [
+  { id: 1, home: 'RSA', away: 'CANADA', date: 'Sunday, June 28', time: '15:00' },
+  { id: 2, home: 'BRAZIL', away: 'JAPAN', date: 'Monday, June 29', time: '13:00' },
+  { id: 3, home: 'GERMANY', away: 'PARAGUAY', date: 'Monday, June 29', time: '16:30' },
+  { id: 4, home: 'NETHERLANDS', away: 'MOROCCO', date: 'Monday, June 29', time: '21:00' },
+  { id: 5, home: 'CIV', away: 'NORWAY', date: 'Tuesday, June 30', time: '13:00' },
+  { id: 6, home: 'FRANCE', away: 'SWEDEN', date: 'Tuesday, June 30', time: '17:00' },
+  { id: 7, home: 'MEXICO', away: 'ECUADOR', date: 'Tuesday, June 30', time: '21:00' },
+  { id: 8, home: 'ENGLAND', away: 'CONGO', date: 'Wednesday, July 1', time: '12:00' },
+  { id: 9, home: 'BELGIUM', away: 'SENEGAL', date: 'Wednesday, July 1', time: '16:00' },
+  { id: 10, home: 'USA', away: 'BOSNIA-HERZEGOVINA', date: 'Wednesday, July 1', time: '20:00' },
+  { id: 11, home: 'SPAIN', away: 'AUSTRIA', date: 'Thursday, July 2', time: '15:00' },
+  { id: 12, home: 'PORTUGAL', away: 'CROATIA', date: 'Thursday, July 2', time: '19:00' },
+  { id: 13, home: 'SWITZERLAND', away: 'ALGERIA', date: 'Thursday, July 2', time: '23:00' },
+  { id: 14, home: 'AUSTRALIA', away: 'EGYPT', date: 'Friday, July 3', time: '14:00' },
+  { id: 15, home: 'ARGENTINA', away: 'CABO VERDE', date: 'Friday, July 3', time: '18:00' },
+  { id: 16, home: 'COLOMBIA', away: 'GHANA', date: 'Friday, July 3', time: '21:30' }
+];
+
+function renderGames() {
+  const container = document.getElementById('games');
+  GAMES.forEach(game => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <p class="game-title">Game ${game.id}</p>
+      <p class="game-meta">${game.date} · ${game.time}</p>
+      <p class="matchup">${game.home} vs ${game.away}</p>
+      <label>Ganador</label>
+      <select id="winner_${game.id}" required>
+        <option value="">Selecciona ganador</option>
+        <option value="${game.home}">${game.home}</option>
+        <option value="${game.away}">${game.away}</option>
+      </select>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function showMessage(text, type) {
+  const msg = document.getElementById('msg');
+  msg.className = type;
+  msg.textContent = text;
+}
+
+function collectData() {
+  const participant = document.getElementById('participant').value.trim();
+  const participantEmail = document.getElementById('participantEmail').value.trim();
+  const errors = [];
+  const picks = [];
+
+  if (!participant) errors.push('Falta el nombre del participante.');
+
+  GAMES.forEach(game => {
+    const winner = document.getElementById(`winner_${game.id}`).value;
+    if (!winner) errors.push(`Falta escoger ganador del Game ${game.id}.`);
+    picks.push({
+      game: game.id,
+      home: game.home,
+      away: game.away,
+      date: game.date,
+      time: game.time,
+      winner
+    });
+  });
+
+  return {
+    round: 'Round of 32',
+    participant,
+    participantEmail,
+    picks,
+    errors
+  };
+}
+
+function formatCSV(data) {
+  const values = [new Date().toISOString(), data.participant, data.participantEmail];
+  data.picks.forEach(p => values.push(p.winner));
+  return values.map(v => `"${String(v || '').replaceAll('"','""')}"`).join(',');
+}
+
+function summarize(data) {
+  let text = `Participante: ${data.participant}\nEmail: ${data.participantEmail || ''}\nRonda: Round of 32\n\n`;
+  data.picks.forEach(p => {
+    text += `Game ${p.game}: ${p.home} vs ${p.away} | Ganador: ${p.winner}\n`;
+  });
+  return text;
+}
+
+document.getElementById('predictionForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const submitBtn = document.getElementById('submitBtn');
+  const data = collectData();
+
+  if (data.errors.length) {
+    showMessage(data.errors.join(' '), 'error');
+    return;
+  }
+
+  document.getElementById('output').value = summarize(data);
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Enviando...';
+
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(data)
+    });
+
+    showMessage('Predicción enviada. Gracias.', 'success');
+    submitBtn.textContent = 'Enviado';
+  } catch (err) {
+    showMessage('No se pudo enviar automáticamente. Descarga el CSV de respaldo y avisa al administrador.', 'error');
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Enviar predicción';
+  }
+});
+
+function downloadCSV() {
+  const data = collectData();
+  if (data.errors.length) { showMessage(data.errors.join(' '), 'error'); return; }
+  const blob = new Blob([formatCSV(data)], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `round32_${data.participant.replace(/\s+/g,'_')}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  document.getElementById('output').value = summarize(data);
+}
+
+renderGames();
+</script>
+</body>
+</html>
