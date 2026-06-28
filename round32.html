@@ -5,49 +5,236 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CTT - Polla Mundial 2026 | Round of 32</title>
   <style>
-    body { font-family: Arial, sans-serif; background:#f5f6f8; margin:0; color:#18202a; }
-    .wrap { max-width: 980px; margin: 0 auto; padding: 24px; }
-    h1 { margin-bottom: 4px; }
-    .note { color:#52616f; margin-top:0; line-height:1.35; }
-    .card { background:white; border-radius:14px; padding:18px; margin:16px 0; box-shadow:0 2px 10px rgba(0,0,0,.06); }
-    .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap:14px; }
-    label { font-weight:700; display:block; margin:10px 0 5px; }
-    input, select { width:100%; padding:10px; border:1px solid #ccd3dd; border-radius:9px; font-size:15px; box-sizing:border-box; background:white; }
-    .game-title { font-size:17px; font-weight:800; margin:0 0 6px; }
-    .game-meta { font-size:13px; color:#52616f; margin-bottom:10px; }
-    .matchup { font-weight:700; margin:8px 0; }
-    button { background:#172b4d; color:white; border:none; padding:13px 18px; border-radius:10px; font-size:16px; cursor:pointer; margin:8px 8px 0 0; }
-    button.secondary { background:#697386; }
-    .error { color:#b00020; font-weight:700; margin-top:10px; }
-    .success { color:#167c3b; font-weight:700; margin-top:10px; }
-    textarea { width:100%; min-height:190px; margin-top:12px; font-family:monospace; border-radius:10px; padding:10px; box-sizing:border-box; }
-    small { color:#697386; }
+    :root {
+      --navy: #10213f;
+      --blue: #1d4ed8;
+      --gold: #f4b400;
+      --bg: #f3f6fb;
+      --card: #ffffff;
+      --muted: #64748b;
+      --line: #d8e0ec;
+      --success: #137a3a;
+      --error: #b42318;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background: radial-gradient(circle at top, #e9f0ff 0%, var(--bg) 42%, #eef2f7 100%);
+      color: #142033;
+    }
+    .wrap { max-width: 1180px; margin: 0 auto; padding: 18px; }
+    .hero {
+      background: linear-gradient(135deg, #0b1f3f 0%, #123c7c 70%, #1d4ed8 100%);
+      color: white;
+      border-radius: 24px;
+      padding: 24px 20px;
+      box-shadow: 0 14px 35px rgba(16, 33, 63, .22);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero:after {
+      content: "⚽";
+      position: absolute;
+      right: 18px;
+      top: 8px;
+      font-size: 78px;
+      opacity: .16;
+      transform: rotate(-12deg);
+    }
+    h1 { margin: 0 0 6px; font-size: clamp(24px, 4vw, 40px); letter-spacing: -.5px; }
+    .subtitle { margin: 0; color: #dbeafe; line-height: 1.35; font-size: 15px; max-width: 780px; }
+    .panel {
+      background: var(--card);
+      border: 1px solid rgba(216, 224, 236, .9);
+      border-radius: 20px;
+      padding: 18px;
+      margin-top: 16px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, .06);
+    }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    label { display: block; font-weight: 750; margin-bottom: 6px; color: #243447; }
+    input {
+      width: 100%;
+      padding: 13px 14px;
+      border: 1px solid #cfd8e6;
+      border-radius: 13px;
+      font-size: 16px;
+      background: #fff;
+      outline: none;
+    }
+    input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(29, 78, 216, .12); }
+    .privacy { color: var(--muted); font-size: 13px; margin: 10px 0 0; }
+    .progress-wrap { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+    .progress-text { font-weight: 800; color: var(--navy); }
+    .bar { height: 10px; flex: 1; min-width: 170px; background: #e7edf7; border-radius: 999px; overflow: hidden; }
+    .fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--blue), var(--gold)); border-radius: 999px; transition: width .25s ease; }
+    .bracket {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+    .side-title {
+      margin: 8px 0 12px;
+      font-size: 18px;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .side { display: grid; gap: 14px; }
+    .match {
+      position: relative;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px;
+      box-shadow: 0 8px 20px rgba(15, 23, 42, .055);
+    }
+    .match:before {
+      content: "";
+      position: absolute;
+      left: -9px;
+      top: 22px;
+      bottom: 22px;
+      width: 3px;
+      background: linear-gradient(var(--blue), var(--gold));
+      border-radius: 999px;
+    }
+    .match-head { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; margin-bottom: 10px; }
+    .game-no { font-weight: 900; color: var(--navy); }
+    .time { color: var(--muted); font-size: 13px; text-align: right; line-height: 1.25; }
+    .teams { display: grid; gap: 8px; }
+    .team-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 13px 12px;
+      border: 1.5px solid #d3dcea;
+      border-radius: 14px;
+      background: #fff;
+      color: #172033;
+      cursor: pointer;
+      font-size: 16px;
+      text-align: left;
+      transition: transform .08s ease, border-color .15s ease, background .15s ease, box-shadow .15s ease;
+    }
+    .team-btn:hover { border-color: #9db4d8; }
+    .team-btn:active { transform: scale(.99); }
+    .team-btn.selected {
+      border-color: var(--blue);
+      background: #eff6ff;
+      box-shadow: 0 0 0 3px rgba(29, 78, 216, .10);
+      font-weight: 900;
+    }
+    .team-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .flag { font-size: 24px; width: 30px; text-align: center; }
+    .team-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .check { color: var(--blue); font-weight: 900; min-width: 22px; text-align: right; }
+    .vs { text-align: center; color: var(--muted); font-weight: 800; font-size: 12px; letter-spacing: .08em; }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 16px; }
+    button.action {
+      border: none;
+      border-radius: 14px;
+      padding: 14px 18px;
+      font-size: 16px;
+      font-weight: 850;
+      cursor: pointer;
+    }
+    #submitBtn { background: var(--navy); color: white; flex: 1; min-width: 210px; }
+    .secondary { background: #e8edf5; color: #213047; }
+    .message { margin-top: 12px; font-weight: 850; }
+    .message.success { color: var(--success); }
+    .message.error { color: var(--error); }
+    textarea {
+      width: 100%;
+      min-height: 180px;
+      margin-top: 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      border: 1px solid #d3dcea;
+      border-radius: 14px;
+      padding: 12px;
+      color: #263344;
+      background: #fbfdff;
+    }
+    @media (max-width: 850px) {
+      .bracket, .form-grid { grid-template-columns: 1fr; }
+      .hero { border-radius: 18px; padding: 22px 16px; }
+      .wrap { padding: 12px; }
+      .panel { border-radius: 16px; padding: 14px; }
+      .match { border-radius: 16px; }
+      .time { text-align: left; }
+      .match-head { flex-direction: column; }
+      .team-btn { padding: 14px 12px; }
+      .actions { position: sticky; bottom: 0; background: rgba(243, 246, 251, .96); padding: 10px 0; backdrop-filter: blur(8px); }
+      #submitBtn { width: 100%; }
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>CTT - Polla Mundial 2026 | Round of 32</h1>
-    <p class="note">Selecciona el ganador de cada uno de los 16 partidos. Las respuestas se guardan automáticamente en el Google Sheet privado del administrador.</p>
+    <section class="hero">
+      <h1>CTT - Polla Mundial 2026</h1>
+      <p class="subtitle">Round of 32 · Selecciona el ganador de cada partido. Toca el equipo que crees que avanza. Las respuestas se guardan automáticamente en el Google Sheet privado del administrador.</p>
+    </section>
 
-    <div class="card">
-      <label>Nombre del participante</label>
-      <input id="participant" placeholder="Ej. Natalia" required />
-      <label>Email del participante</label>
-      <input id="participantEmail" type="email" placeholder="Ej. nombre@email.com" />
-      <small>Solo el administrador verá las respuestas consolidadas.</small>
-    </div>
+    <section class="panel">
+      <div class="form-grid">
+        <div>
+          <label for="participant">Nombre del participante</label>
+          <input id="participant" placeholder="Ej. Natalia" autocomplete="name" required />
+        </div>
+        <div>
+          <label for="participantEmail">Email del participante</label>
+          <input id="participantEmail" type="email" placeholder="Ej. nombre@email.com" autocomplete="email" />
+        </div>
+      </div>
+      <p class="privacy">Solo el administrador verá las respuestas consolidadas.</p>
+    </section>
+
+    <section class="panel progress-wrap">
+      <div class="progress-text" id="progressText">Predicciones seleccionadas: 0 / 16</div>
+      <div class="bar"><div class="fill" id="progressFill"></div></div>
+    </section>
 
     <form id="predictionForm">
-      <div id="games" class="grid"></div>
-      <button type="submit" id="submitBtn">Enviar predicción</button>
-      <button type="button" class="secondary" onclick="downloadCSV()">Descargar CSV de respaldo</button>
-      <div id="msg"></div>
-      <textarea id="output" readonly placeholder="Aquí aparecerá el resumen después de enviar o descargar respaldo."></textarea>
+      <section class="bracket" id="bracket"></section>
+
+      <section class="panel">
+        <div class="actions">
+          <button type="submit" class="action" id="submitBtn">Enviar predicción</button>
+          <button type="button" class="action secondary" onclick="downloadCSV()">Descargar CSV de respaldo</button>
+        </div>
+        <div id="msg" class="message"></div>
+        <textarea id="output" readonly placeholder="Aquí aparecerá tu resumen después de enviar o descargar respaldo."></textarea>
+      </section>
     </form>
   </div>
 
 <script>
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzwQRejWXRhBy3-L6vFcKRlpDnSN2bKfNpmWx6uwXuQyRfX3QAkA9q2GinKqhbZO9BY/exec";
+
+const FLAGS = {
+  RSA: '🇿🇦', CANADA: '🇨🇦', BRAZIL: '🇧🇷', JAPAN: '🇯🇵', GERMANY: '🇩🇪', PARAGUAY: '🇵🇾',
+  NETHERLANDS: '🇳🇱', MOROCCO: '🇲🇦', CIV: '🇨🇮', NORWAY: '🇳🇴', FRANCE: '🇫🇷', SWEDEN: '🇸🇪',
+  MEXICO: '🇲🇽', ECUADOR: '🇪🇨', ENGLAND: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', CONGO: '🇨🇩', BELGIUM: '🇧🇪', SENEGAL: '🇸🇳',
+  USA: '🇺🇸', 'BOSNIA-HERZEGOVINA': '🇧🇦', SPAIN: '🇪🇸', AUSTRIA: '🇦🇹', PORTUGAL: '🇵🇹',
+  CROATIA: '🇭🇷', SWITZERLAND: '🇨🇭', ALGERIA: '🇩🇿', AUSTRALIA: '🇦🇺', EGYPT: '🇪🇬',
+  ARGENTINA: '🇦🇷', 'CABO VERDE': '🇨🇻', COLOMBIA: '🇨🇴', GHANA: '🇬🇭'
+};
+
+const DISPLAY = {
+  RSA: 'South Africa', CANADA: 'Canada', BRAZIL: 'Brazil', JAPAN: 'Japan', GERMANY: 'Germany', PARAGUAY: 'Paraguay',
+  NETHERLANDS: 'Netherlands', MOROCCO: 'Morocco', CIV: 'Ivory Coast', NORWAY: 'Norway', FRANCE: 'France', SWEDEN: 'Sweden',
+  MEXICO: 'Mexico', ECUADOR: 'Ecuador', ENGLAND: 'England', CONGO: 'Congo', BELGIUM: 'Belgium', SENEGAL: 'Senegal',
+  USA: 'USA', 'BOSNIA-HERZEGOVINA': 'Bosnia-Herzegovina', SPAIN: 'Spain', AUSTRIA: 'Austria', PORTUGAL: 'Portugal',
+  CROATIA: 'Croatia', SWITZERLAND: 'Switzerland', ALGERIA: 'Algeria', AUSTRALIA: 'Australia', EGYPT: 'Egypt',
+  ARGENTINA: 'Argentina', 'CABO VERDE': 'Cabo Verde', COLOMBIA: 'Colombia', GHANA: 'Ghana'
+};
 
 const GAMES = [
   { id: 1, home: 'RSA', away: 'CANADA', date: 'Sunday, June 28', time: '15:00' },
@@ -68,29 +255,68 @@ const GAMES = [
   { id: 16, home: 'COLOMBIA', away: 'GHANA', date: 'Friday, July 3', time: '21:30' }
 ];
 
-function renderGames() {
-  const container = document.getElementById('games');
-  GAMES.forEach(game => {
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.innerHTML = `
-      <p class="game-title">Game ${game.id}</p>
-      <p class="game-meta">${game.date} · ${game.time}</p>
-      <p class="matchup">${game.home} vs ${game.away}</p>
-      <label>Ganador</label>
-      <select id="winner_${game.id}" required>
-        <option value="">Selecciona ganador</option>
-        <option value="${game.home}">${game.home}</option>
-        <option value="${game.away}">${game.away}</option>
-      </select>
-    `;
-    container.appendChild(card);
+const picks = {};
+
+function teamButton(game, team) {
+  return `
+    <button type="button" class="team-btn" data-game="${game.id}" data-team="${team}" onclick="selectWinner(${game.id}, '${team.replace(/'/g, "\\'")}')">
+      <span class="team-left"><span class="flag">${FLAGS[team] || '🏳️'}</span><span class="team-name">${DISPLAY[team] || team}</span></span>
+      <span class="check" id="check_${game.id}_${team.replace(/[^A-Z0-9]/g, '')}"></span>
+    </button>`;
+}
+
+function renderBracket() {
+  const left = GAMES.slice(0, 8);
+  const right = GAMES.slice(8);
+  const bracket = document.getElementById('bracket');
+  bracket.innerHTML = `
+    <div>
+      <h2 class="side-title">🏆 Bracket Side A</h2>
+      <div class="side">${left.map(renderMatch).join('')}</div>
+    </div>
+    <div>
+      <h2 class="side-title">🏆 Bracket Side B</h2>
+      <div class="side">${right.map(renderMatch).join('')}</div>
+    </div>`;
+  updateProgress();
+}
+
+function renderMatch(game) {
+  return `
+    <article class="match" id="match_${game.id}">
+      <div class="match-head">
+        <div class="game-no">Game ${game.id}</div>
+        <div class="time">⏰ ${game.date}<br>${game.time}</div>
+      </div>
+      <div class="teams">
+        ${teamButton(game, game.home)}
+        <div class="vs">VS</div>
+        ${teamButton(game, game.away)}
+      </div>
+    </article>`;
+}
+
+function selectWinner(gameId, team) {
+  picks[gameId] = team;
+  document.querySelectorAll(`[data-game="${gameId}"]`).forEach(btn => {
+    const isSelected = btn.dataset.team === team;
+    btn.classList.toggle('selected', isSelected);
+    const check = btn.querySelector('.check');
+    if (check) check.textContent = isSelected ? '✓' : '';
   });
+  updateProgress();
+}
+
+function updateProgress() {
+  const total = GAMES.length;
+  const selected = Object.keys(picks).length;
+  document.getElementById('progressText').textContent = `Predicciones seleccionadas: ${selected} / ${total}`;
+  document.getElementById('progressFill').style.width = `${(selected / total) * 100}%`;
 }
 
 function showMessage(text, type) {
   const msg = document.getElementById('msg');
-  msg.className = type;
+  msg.className = `message ${type}`;
   msg.textContent = text;
 }
 
@@ -98,44 +324,41 @@ function collectData() {
   const participant = document.getElementById('participant').value.trim();
   const participantEmail = document.getElementById('participantEmail').value.trim();
   const errors = [];
-  const picks = [];
+  const selectedPicks = [];
 
   if (!participant) errors.push('Falta el nombre del participante.');
 
   GAMES.forEach(game => {
-    const winner = document.getElementById(`winner_${game.id}`).value;
+    const winner = picks[game.id] || '';
     if (!winner) errors.push(`Falta escoger ganador del Game ${game.id}.`);
-    picks.push({
+    selectedPicks.push({
       game: game.id,
       home: game.home,
       away: game.away,
+      homeName: DISPLAY[game.home] || game.home,
+      awayName: DISPLAY[game.away] || game.away,
       date: game.date,
       time: game.time,
-      winner
+      winner,
+      winnerName: DISPLAY[winner] || winner
     });
   });
 
-  return {
-    round: 'Round of 32',
-    participant,
-    participantEmail,
-    picks,
-    errors
-  };
-}
-
-function formatCSV(data) {
-  const values = [new Date().toISOString(), data.participant, data.participantEmail];
-  data.picks.forEach(p => values.push(p.winner));
-  return values.map(v => `"${String(v || '').replaceAll('"','""')}"`).join(',');
+  return { round: 'Round of 32', participant, participantEmail, picks: selectedPicks, errors };
 }
 
 function summarize(data) {
   let text = `Participante: ${data.participant}\nEmail: ${data.participantEmail || ''}\nRonda: Round of 32\n\n`;
   data.picks.forEach(p => {
-    text += `Game ${p.game}: ${p.home} vs ${p.away} | Ganador: ${p.winner}\n`;
+    text += `Game ${p.game}: ${p.homeName} vs ${p.awayName} | Ganador: ${p.winnerName}\n`;
   });
   return text;
+}
+
+function formatCSV(data) {
+  const values = [new Date().toISOString(), data.participant, data.participantEmail];
+  data.picks.forEach(p => values.push(p.winnerName || p.winner));
+  return values.map(v => `"${String(v || '').replaceAll('"','""')}"`).join(',');
 }
 
 document.getElementById('predictionForm').addEventListener('submit', async function(e) {
@@ -159,7 +382,6 @@ document.getElementById('predictionForm').addEventListener('submit', async funct
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(data)
     });
-
     showMessage('Predicción enviada. Gracias.', 'success');
     submitBtn.textContent = 'Enviado';
   } catch (err) {
@@ -182,7 +404,7 @@ function downloadCSV() {
   document.getElementById('output').value = summarize(data);
 }
 
-renderGames();
+renderBracket();
 </script>
 </body>
 </html>
