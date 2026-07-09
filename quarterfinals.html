@@ -54,34 +54,268 @@ button.submit:disabled{background:#9ca3af;cursor:not-allowed;box-shadow:none}
 </head>
 <body>
 <div class="page">
-<header><div class="trophy">🏆</div><h1>World Cup Pool 2026</h1><p class="subtitle">Quarterfinals Predictions</p><div class="admin-note">Select the winner and enter the final score for each match. All 4 games are required.</div></header>
-<section class="panel"><div class="fields"><div><label for="participant">Name</label><input id="participant" autocomplete="name" placeholder="Your name" /></div><div><label for="participantEmail">Email</label><input id="participantEmail" autocomplete="email" type="email" placeholder="you@email.com" /></div></div></section>
-<div class="progress-wrap"><div class="progress-card"><div class="progress-top"><span>Progress</span><span id="progressText">0 / 4 games completed</span></div><div class="bar"><div id="progressBar"></div></div></div></div>
-<main id="matches"></main>
-<section class="summary" id="summary"><h2>Review your picks</h2><ul id="summaryList"></ul></section>
-<section class="actions"><div id="message" class="message"></div><button id="submitBtn" class="submit" disabled>Finish remaining games</button></section>
+<header>
+<div class="trophy">🏆</div>
+<h1>World Cup Pool 2026</h1>
+<p class="subtitle">Quarterfinals Predictions</p>
+<div class="admin-note">Select the advancing team and enter the final score. Tie scores are allowed.</div>
+</header>
+
+<section class="panel">
+<div class="fields">
+<div>
+<label for="participant">Name</label>
+<input id="participant" autocomplete="name" placeholder="Your name" />
 </div>
+<div>
+<label for="participantEmail">Email</label>
+<input id="participantEmail" autocomplete="email" type="email" placeholder="you@email.com" />
+</div>
+</div>
+</section>
+
+<div class="progress-wrap">
+<div class="progress-card">
+<div class="progress-top">
+<span>Progress</span>
+<span id="progressText">0 / 4 games completed</span>
+</div>
+<div class="bar"><div id="progressBar"></div></div>
+</div>
+</div>
+
+<main id="matches"></main>
+
+<section class="summary" id="summary">
+<h2>Review your picks</h2>
+<ul id="summaryList"></ul>
+</section>
+
+<section class="actions">
+<div id="message" class="message"></div>
+<button id="submitBtn" class="submit" disabled>Submit Quarterfinal Results</button>
+</section>
+</div>
+
 <script>
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzwQRejWXRhBy3-L6vFcKRlpDnSN2bKfNpmWx6uwXuQyRfX3QAkA9q2GinKqhbZO9BY/exec";
-const flags={"FRANCE":"https://flagcdn.com/fr.svg","MOROCCO":"https://flagcdn.com/ma.svg","SPAIN":"https://flagcdn.com/es.svg","BELGIUM":"https://flagcdn.com/be.svg","NORWAY":"https://flagcdn.com/no.svg","ENGLAND":"https://flagcdn.com/gb-eng.svg","ARGENTINA":"https://flagcdn.com/ar.svg","SWITZERLAND":"https://flagcdn.com/ch.svg"};
-const displayNames={"FRANCE":"France","MOROCCO":"Morocco","SPAIN":"Spain","BELGIUM":"Belgium","NORWAY":"Norway","ENGLAND":"England","ARGENTINA":"Argentina","SWITZERLAND":"Switzerland"};
-const games=[
-{id:1,day:"Thursday · July 9",time:"4:00 PM",team1:"FRANCE",team2:"MOROCCO"},
-{id:2,day:"Friday · July 10",time:"3:00 PM",team1:"SPAIN",team2:"BELGIUM"},
-{id:3,day:"Saturday · July 11",time:"5:00 PM",team1:"NORWAY",team2:"ENGLAND"},
-{id:4,day:"Saturday · July 11",time:"9:00 PM",team1:"ARGENTINA",team2:"SWITZERLAND"}];
-const picks={},scores={},TOTAL_GAMES=games.length;
-const matchesEl=document.getElementById("matches"),progressText=document.getElementById("progressText"),progressBar=document.getElementById("progressBar"),submitBtn=document.getElementById("submitBtn"),messageEl=document.getElementById("message"),summaryEl=document.getElementById("summary"),summaryList=document.getElementById("summaryList");
-function teamButton(game,teamCode){return `<button class="team" type="button" data-game="${game.id}" data-team="${teamCode}"><img class="flag" src="${flags[teamCode]}" alt="${displayNames[teamCode]} flag"><span>${displayNames[teamCode]}</span></button>`}
-function renderGames(){let currentDay="",html="";games.forEach((game,index)=>{if(game.day!==currentDay){if(currentDay!=="")html+=`</section>`;currentDay=game.day;html+=`<div class="day-title">${game.day}</div><section class="grid">`}html+=`<article class="match"><div class="match-head"><span>Game ${game.id}</span><span>Quarterfinal</span></div>${teamButton(game,game.team1)}<div class="vs">VS</div>${teamButton(game,game.team2)}<div class="scorebox"><div class="score-title">Final score prediction</div><div class="score-row"><span>${displayNames[game.team1]}</span><input type="number" min="0" max="30" inputmode="numeric" data-score-game="${game.id}" data-score-team="team1" placeholder="0"></div><div class="score-row"><span>${displayNames[game.team2]}</span><input type="number" min="0" max="30" inputmode="numeric" data-score-game="${game.id}" data-score-team="team2" placeholder="0"></div></div><div class="time">🕒 ${game.day} · ${game.time} EDT</div></article>`;if(index===games.length-1)html+=`</section>`});matchesEl.innerHTML=html}
-function isGameComplete(game){const s=scores[game.id]||{};return picks[game.id]&&s.team1!==undefined&&s.team1!==""&&s.team2!==undefined&&s.team2!==""}
-function updateUI(){document.querySelectorAll(".team").forEach(btn=>{btn.classList.toggle("selected",picks[btn.dataset.game]===btn.dataset.team)});const completed=games.filter(isGameComplete).length;progressText.textContent=completed===TOTAL_GAMES?`${TOTAL_GAMES} / ${TOTAL_GAMES} completed ✓`:`${completed} / ${TOTAL_GAMES} games completed`;progressBar.style.width=`${completed/TOTAL_GAMES*100}%`;submitBtn.disabled=completed!==TOTAL_GAMES;submitBtn.textContent=completed===TOTAL_GAMES?"Submit Prediction":`Finish ${TOTAL_GAMES-completed} remaining game${TOTAL_GAMES-completed===1?"":"s"}`;if(completed===TOTAL_GAMES){summaryEl.style.display="block";summaryList.innerHTML=games.map(g=>{const s=scores[g.id];return `<li>Game ${g.id}: ${displayNames[picks[g.id]]} wins · ${displayNames[g.team1]} ${s.team1} - ${s.team2} ${displayNames[g.team2]}</li>`}).join("")}else{summaryEl.style.display="none"}}
-function showMessage(text,type){messageEl.textContent=text;messageEl.className=`message ${type}`}
-function collectData(){const participant=document.getElementById("participant").value.trim(),participantEmail=document.getElementById("participantEmail").value.trim(),errors=[];if(!participant)errors.push("Please enter your name.");if(!participantEmail)errors.push("Please enter your email.");if(games.filter(isGameComplete).length!==TOTAL_GAMES)errors.push("Please select a winner and score for all games.");const quarterfinals=games.map(g=>{const s=scores[g.id]||{};return{game:g.id,match:`${displayNames[g.team1]} vs ${displayNames[g.team2]}`,date:g.day,time:g.time,team1:displayNames[g.team1],team2:displayNames[g.team2],winner:displayNames[picks[g.id]||""],scoreTeam1:s.team1||"",scoreTeam2:s.team2||"",score:`${displayNames[g.team1]} ${s.team1||""} - ${s.team2||""} ${displayNames[g.team2]}`}});return{errors,round:"Quarterfinals",participant,participantEmail,quarterfinals}}
-matchesEl.addEventListener("click",e=>{const btn=e.target.closest(".team");if(!btn)return;picks[btn.dataset.game]=btn.dataset.team;updateUI()});
-matchesEl.addEventListener("input",e=>{const input=e.target.closest("[data-score-game]");if(!input)return;const gameId=input.dataset.scoreGame,team=input.dataset.scoreTeam;if(!scores[gameId])scores[gameId]={};scores[gameId][team]=input.value;updateUI()});
-submitBtn.addEventListener("click",async()=>{const data=collectData();if(data.errors.length){showMessage(data.errors.join(" "),"error");return}if(!window.confirm("Submit your Quarterfinals prediction?"))return;submitBtn.disabled=true;submitBtn.textContent="Sending...";try{await fetch(SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(data)});showMessage("Prediction sent. Thank you and good luck!","success");submitBtn.textContent="Submitted"}catch(err){showMessage("Could not send automatically. Please contact the administrator.","error");submitBtn.disabled=false;submitBtn.textContent="Submit Prediction"}});
-renderGames();updateUI();
+
+const flags = {
+  "FRANCE": "https://flagcdn.com/fr.svg",
+  "MOROCCO": "https://flagcdn.com/ma.svg",
+  "SPAIN": "https://flagcdn.com/es.svg",
+  "BELGIUM": "https://flagcdn.com/be.svg",
+  "NORWAY": "https://flagcdn.com/no.svg",
+  "ENGLAND": "https://flagcdn.com/gb-eng.svg",
+  "ARGENTINA": "https://flagcdn.com/ar.svg",
+  "SWITZERLAND": "https://flagcdn.com/ch.svg"
+};
+
+const displayNames = {
+  "FRANCE": "France",
+  "MOROCCO": "Morocco",
+  "SPAIN": "Spain",
+  "BELGIUM": "Belgium",
+  "NORWAY": "Norway",
+  "ENGLAND": "England",
+  "ARGENTINA": "Argentina",
+  "SWITZERLAND": "Switzerland"
+};
+
+const games = [
+  {id:1, day:"Thursday · July 9", time:"4:00 PM", team1:"FRANCE", team2:"MOROCCO"},
+  {id:2, day:"Friday · July 10", time:"3:00 PM", team1:"SPAIN", team2:"BELGIUM"},
+  {id:3, day:"Saturday · July 11", time:"5:00 PM", team1:"NORWAY", team2:"ENGLAND"},
+  {id:4, day:"Saturday · July 11", time:"9:00 PM", team1:"ARGENTINA", team2:"SWITZERLAND"}
+];
+
+const picks = {};
+const scores = {};
+const TOTAL_GAMES = games.length;
+
+const matchesEl = document.getElementById("matches");
+const progressText = document.getElementById("progressText");
+const progressBar = document.getElementById("progressBar");
+const submitBtn = document.getElementById("submitBtn");
+const messageEl = document.getElementById("message");
+const summaryEl = document.getElementById("summary");
+const summaryList = document.getElementById("summaryList");
+
+function teamButton(game, teamCode) {
+  return `
+    <button class="team" type="button" data-game="${game.id}" data-team="${teamCode}">
+      <img class="flag" src="${flags[teamCode]}" alt="${displayNames[teamCode]} flag">
+      <span>${displayNames[teamCode]}</span>
+    </button>
+  `;
+}
+
+function renderGames() {
+  let currentDay = "";
+  let html = "";
+
+  games.forEach((game, index) => {
+    if (game.day !== currentDay) {
+      if (currentDay !== "") html += `</section>`;
+      currentDay = game.day;
+      html += `<div class="day-title">${game.day}</div><section class="grid">`;
+    }
+
+    html += `
+      <article class="match">
+        <div class="match-head"><span>Game ${game.id}</span><span>Quarterfinal</span></div>
+        ${teamButton(game, game.team1)}
+        <div class="vs">VS</div>
+        ${teamButton(game, game.team2)}
+        <div class="scorebox">
+          <div class="score-title">Final score prediction (ties allowed)</div>
+          <div class="score-row">
+            <span>${displayNames[game.team1]}</span>
+            <input type="number" min="0" max="30" inputmode="numeric" data-score-game="${game.id}" data-score-team="team1" placeholder="0">
+          </div>
+          <div class="score-row">
+            <span>${displayNames[game.team2]}</span>
+            <input type="number" min="0" max="30" inputmode="numeric" data-score-game="${game.id}" data-score-team="team2" placeholder="0">
+          </div>
+        </div>
+        <div class="time">🕒 ${game.day} · ${game.time} EDT</div>
+      </article>
+    `;
+
+    if (index === games.length - 1) html += `</section>`;
+  });
+
+  matchesEl.innerHTML = html;
+}
+
+function isGameComplete(game) {
+  const s = scores[game.id] || {};
+  return picks[game.id] &&
+    s.team1 !== undefined && s.team1 !== "" &&
+    s.team2 !== undefined && s.team2 !== "";
+}
+
+function updateUI() {
+  document.querySelectorAll(".team").forEach(btn => {
+    btn.classList.toggle("selected", picks[btn.dataset.game] === btn.dataset.team);
+  });
+
+  const completed = games.filter(isGameComplete).length;
+
+  progressText.textContent = completed === TOTAL_GAMES
+    ? `${TOTAL_GAMES} / ${TOTAL_GAMES} completed ✓`
+    : `${completed} / ${TOTAL_GAMES} games completed`;
+
+  progressBar.style.width = `${completed / TOTAL_GAMES * 100}%`;
+
+  submitBtn.disabled = completed !== TOTAL_GAMES;
+  submitBtn.textContent = "Submit Quarterfinal Results";
+
+  if (completed === TOTAL_GAMES) {
+    summaryEl.style.display = "block";
+    summaryList.innerHTML = games.map(g => {
+      const s = scores[g.id];
+      return `<li>Game ${g.id}: ${displayNames[picks[g.id]]} advances · ${displayNames[g.team1]} ${s.team1} - ${s.team2} ${displayNames[g.team2]}</li>`;
+    }).join("");
+  } else {
+    summaryEl.style.display = "none";
+  }
+}
+
+function showMessage(text, type) {
+  messageEl.textContent = text;
+  messageEl.className = `message ${type}`;
+}
+
+function collectData() {
+  const participant = document.getElementById("participant").value.trim();
+  const participantEmail = document.getElementById("participantEmail").value.trim();
+  const errors = [];
+
+  if (!participant) errors.push("Please enter your name.");
+  if (!participantEmail) errors.push("Please enter your email.");
+  if (games.filter(isGameComplete).length !== TOTAL_GAMES) {
+    errors.push("Please select the advancing team and enter a score for all games. Tie scores are allowed.");
+  }
+
+  const quarterfinals = games.map(g => {
+    const s = scores[g.id] || {};
+    return {
+      game: g.id,
+      match: `${displayNames[g.team1]} vs ${displayNames[g.team2]}`,
+      date: g.day,
+      time: g.time,
+      team1: displayNames[g.team1],
+      team2: displayNames[g.team2],
+      winner: displayNames[picks[g.id] || ""],
+      scoreTeam1: s.team1 || "",
+      scoreTeam2: s.team2 || "",
+      score: `${displayNames[g.team1]} ${s.team1 || ""} - ${s.team2 || ""} ${displayNames[g.team2]}`
+    };
+  });
+
+  return {
+    errors,
+    round: "Quarterfinals",
+    participant,
+    participantEmail,
+    quarterfinals
+  };
+}
+
+matchesEl.addEventListener("click", e => {
+  const btn = e.target.closest(".team");
+  if (!btn) return;
+  picks[btn.dataset.game] = btn.dataset.team;
+  updateUI();
+});
+
+matchesEl.addEventListener("input", e => {
+  const input = e.target.closest("[data-score-game]");
+  if (!input) return;
+
+  const gameId = input.dataset.scoreGame;
+  const team = input.dataset.scoreTeam;
+
+  if (!scores[gameId]) scores[gameId] = {};
+  scores[gameId][team] = input.value;
+
+  updateUI();
+});
+
+submitBtn.addEventListener("click", async () => {
+  const data = collectData();
+
+  if (data.errors.length) {
+    showMessage(data.errors.join(" "), "error");
+    return;
+  }
+
+  const confirmed = window.confirm("Submit your Quarterfinals prediction? Tie scores are allowed; the selected team is the team advancing.");
+  if (!confirmed) return;
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Sending...";
+
+  try {
+    await fetch(SCRIPT_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {"Content-Type": "text/plain;charset=utf-8"},
+      body: JSON.stringify(data)
+    });
+
+    showMessage("Prediction sent. Thank you and good luck!", "success");
+    submitBtn.textContent = "Submitted";
+  } catch (err) {
+    showMessage("Could not send automatically. Please contact the administrator.", "error");
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Submit Quarterfinal Results";
+  }
+});
+
+renderGames();
+updateUI();
 </script>
 </body>
 </html>
