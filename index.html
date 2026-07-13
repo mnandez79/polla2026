@@ -1,281 +1,855 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CTT - Polla Mundial 2026</title>
+  <meta name="theme-color" content="#071a33" />
+  <title>World Cup Pool — Semifinal Predictions</title>
+
   <style>
-    body { font-family: Arial, sans-serif; background:#f5f6f8; margin:0; color:#18202a; }
-    .wrap { max-width: 1100px; margin: 0 auto; padding: 24px; }
-    h1 { margin-bottom: 4px; }
-    .note { color:#52616f; margin-top:0; line-height:1.35; }
-    .card { background:white; border-radius:14px; padding:18px; margin:16px 0; box-shadow:0 2px 10px rgba(0,0,0,.06); }
-    .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:14px; }
-    label { font-weight:700; display:block; margin:10px 0 5px; }
-    input, select { width:100%; padding:10px; border:1px solid #ccd3dd; border-radius:9px; font-size:15px; box-sizing:border-box; background:white; }
-    .group-title { font-size:18px; font-weight:800; margin:0 0 8px; }
-    .teams { font-size:13px; color:#52616f; margin-bottom:8px; }
-    .third-hint { font-size:12px; color:#697386; margin-top:5px; }
-    button { background:#172b4d; color:white; border:none; padding:13px 18px; border-radius:10px; font-size:16px; cursor:pointer; margin:8px 8px 0 0; }
-    button.secondary { background:#697386; }
-    .error { color:#b00020; font-weight:700; margin-top:10px; }
-    .success { color:#167c3b; font-weight:700; margin-top:10px; }
-    .best-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:10px; margin-top:12px; }
-    .best-item { display:flex; align-items:center; gap:10px; padding:12px; border:1px solid #e2e7ef; border-radius:12px; background:#fbfcfe; }
-    .best-item input { width:auto; transform:scale(1.15); }
-    .best-item.disabled { opacity:.45; }
-    .best-label { font-weight:700; }
-    .third-count { font-weight:800; color:#172b4d; }
-    textarea { width:100%; min-height:190px; margin-top:12px; font-family:monospace; border-radius:10px; padding:10px; box-sizing:border-box; }
-    small { color:#697386; }
+    :root {
+      --navy: #071a33;
+      --navy-2: #0e2b50;
+      --blue: #1677ff;
+      --blue-dark: #075dcc;
+      --gold: #f6c344;
+      --white: #ffffff;
+      --ink: #172033;
+      --muted: #667085;
+      --line: #d9e1ec;
+      --soft: #f4f7fb;
+      --danger: #b42318;
+      --success: #067647;
+      --shadow: 0 18px 50px rgba(7, 26, 51, 0.16);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 15% 0%, rgba(22, 119, 255, 0.24), transparent 32rem),
+        linear-gradient(145deg, #06162c 0%, #0e315b 52%, #081c36 100%);
+    }
+
+    button, input { font: inherit; }
+
+    .shell {
+      width: min(760px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 42px 0 54px;
+    }
+
+    .hero {
+      color: var(--white);
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 12px;
+      padding: 7px 13px;
+      border: 1px solid rgba(255,255,255,.22);
+      border-radius: 999px;
+      background: rgba(255,255,255,.08);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: .11em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 7vw, 3.35rem);
+      line-height: 1;
+      letter-spacing: -.045em;
+    }
+
+    .hero p {
+      max-width: 580px;
+      margin: 15px auto 0;
+      color: rgba(255,255,255,.78);
+      line-height: 1.55;
+    }
+
+    .card {
+      background: var(--white);
+      border: 1px solid rgba(255,255,255,.6);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .form-header {
+      padding: 24px 26px 20px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, #fff 0%, #f9fbfe 100%);
+    }
+
+    .form-header h2 {
+      margin: 0 0 6px;
+      font-size: 1.28rem;
+    }
+
+    .form-header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: .93rem;
+      line-height: 1.45;
+    }
+
+    form { padding: 26px; }
+
+    .field-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 800;
+      font-size: .94rem;
+    }
+
+    .name-input {
+      width: 100%;
+      min-height: 49px;
+      padding: 0 14px;
+      border: 1px solid #c7d2e1;
+      border-radius: 12px;
+      color: var(--ink);
+      background: #fff;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    .name-input:focus, .score-input:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 4px rgba(22,119,255,.12);
+    }
+
+    .games {
+      display: grid;
+      gap: 18px;
+      margin-top: 24px;
+    }
+
+    .game {
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--soft);
+    }
+
+    .game-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      margin-bottom: 18px;
+    }
+
+    .round {
+      margin: 0 0 4px;
+      color: var(--blue-dark);
+      font-weight: 900;
+      font-size: .77rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .date {
+      margin: 0;
+      color: var(--muted);
+      font-size: .88rem;
+      line-height: 1.4;
+    }
+
+    .match-number {
+      flex: 0 0 auto;
+      padding: 6px 10px;
+      border-radius: 999px;
+      color: #694b00;
+      background: #fff4cc;
+      font-size: .74rem;
+      font-weight: 900;
+    }
+
+    .scoreboard {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 50px 30px 50px minmax(0, 1fr);
+      align-items: center;
+      gap: 8px;
+    }
+
+    .team {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-width: 0;
+      font-weight: 850;
+    }
+
+    .team.away {
+      flex-direction: row-reverse;
+      text-align: right;
+    }
+
+    .flag {
+      font-size: 1.65rem;
+      line-height: 1;
+    }
+
+    .flag-svg {
+      width: 30px;
+      height: 18px;
+      flex: 0 0 auto;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      border-radius: 2px;
+      vertical-align: middle;
+    }
+
+    .winner-option .flag-svg {
+      margin-right: 7px;
+    }
+
+    .team-name {
+      overflow-wrap: anywhere;
+    }
+
+    .score-input {
+      width: 50px;
+      height: 50px;
+      border: 1px solid #bac8da;
+      border-radius: 12px;
+      text-align: center;
+      font-size: 1.15rem;
+      font-weight: 900;
+      outline: none;
+      background: #fff;
+      -moz-appearance: textfield;
+    }
+
+    .score-input::-webkit-inner-spin-button,
+    .score-input::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .dash {
+      text-align: center;
+      color: var(--muted);
+      font-weight: 900;
+    }
+
+    .advance-label {
+      margin: 18px 0 10px;
+      font-size: .88rem;
+      font-weight: 800;
+    }
+
+    .winner-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .winner-option input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .winner-option span {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 9px 12px;
+      border: 1px solid #c6d0dd;
+      border-radius: 11px;
+      background: #fff;
+      font-size: .88rem;
+      font-weight: 800;
+      text-align: center;
+      cursor: pointer;
+      transition: .18s ease;
+    }
+
+    .winner-option input:checked + span {
+      color: #fff;
+      border-color: var(--blue);
+      background: var(--blue);
+      box-shadow: 0 5px 15px rgba(22,119,255,.24);
+    }
+
+    .winner-option input:focus-visible + span {
+      outline: 3px solid rgba(22,119,255,.28);
+      outline-offset: 2px;
+    }
+
+    .error {
+      display: none;
+      margin: 10px 0 0;
+      color: var(--danger);
+      font-size: .83rem;
+      font-weight: 700;
+    }
+
+    .game.invalid {
+      border-color: #f2a7a0;
+      background: #fff8f7;
+    }
+
+    .game.invalid .error { display: block; }
+
+    .rules {
+      margin: 22px 0 0;
+      padding: 14px 16px;
+      border-radius: 13px;
+      color: #344054;
+      background: #eef5ff;
+      font-size: .86rem;
+      line-height: 1.5;
+    }
+
+    .rules strong { color: #184b8f; }
+
+    .submit-btn {
+      width: 100%;
+      min-height: 54px;
+      margin-top: 22px;
+      border: 0;
+      border-radius: 13px;
+      color: #06162c;
+      background: var(--gold);
+      font-weight: 950;
+      cursor: pointer;
+      transition: transform .15s, filter .15s, opacity .15s;
+    }
+
+    .submit-btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      filter: brightness(1.02);
+    }
+
+    .submit-btn:disabled {
+      cursor: not-allowed;
+      opacity: .62;
+    }
+
+    .status {
+      display: none;
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 11px;
+      font-size: .9rem;
+      font-weight: 750;
+      line-height: 1.4;
+    }
+
+    .status.success {
+      display: block;
+      color: var(--success);
+      background: #ecfdf3;
+      border: 1px solid #abefc6;
+    }
+
+    .status.failure {
+      display: block;
+      color: var(--danger);
+      background: #fef3f2;
+      border: 1px solid #fecdca;
+    }
+
+    .confirmation {
+      display: none;
+      padding: 42px 26px;
+      text-align: center;
+    }
+
+    .confirmation.show { display: block; }
+
+    .check {
+      display: grid;
+      place-items: center;
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 17px;
+      border-radius: 50%;
+      color: #fff;
+      background: #079455;
+      font-size: 2rem;
+      font-weight: 900;
+    }
+
+    .confirmation h2 { margin: 0 0 8px; }
+
+    .confirmation p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .another-btn {
+      margin-top: 22px;
+      padding: 11px 18px;
+      border: 1px solid #c4cfdd;
+      border-radius: 10px;
+      color: var(--ink);
+      background: #fff;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .footer {
+      margin-top: 18px;
+      color: rgba(255,255,255,.62);
+      text-align: center;
+      font-size: .78rem;
+    }
+
+    @media (max-width: 580px) {
+      .shell {
+        width: min(100% - 18px, 760px);
+        padding-top: 24px;
+      }
+
+      form, .form-header { padding-left: 18px; padding-right: 18px; }
+      .game { padding: 17px 13px; }
+      .game-top { display: block; }
+      .match-number { display: inline-block; margin-top: 9px; }
+
+      .scoreboard {
+        grid-template-columns: minmax(0, 1fr) 43px 18px 43px minmax(0, 1fr);
+        gap: 5px;
+      }
+
+      .score-input {
+        width: 43px;
+        height: 47px;
+      }
+
+      .team {
+        display: grid;
+        justify-items: start;
+        gap: 3px;
+        font-size: .78rem;
+      }
+
+      .team.away {
+        justify-items: end;
+      }
+
+      .flag { font-size: 1.45rem; }
+      .winner-options { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
+
 <body>
-  <div class="wrap">
-    <h1>CTT - Polla Mundial 2026</h1>
-    <p class="note">Selecciona el 1º, 2º y 3º lugar de cada grupo. El dropdown del 3º lugar solo mostrará los dos equipos que no fueron escogidos como 1º o 2º. Luego marca exactamente 8 equipos como mejores terceros.</p>
+  <main class="shell">
+    <header class="hero">
+      <div class="eyebrow">🏆 World Cup Pool 2026</div>
+      <h1>Semifinal Predictions</h1>
+      <p>
+        Predict the score after regulation time and select the team that will
+        advance to the World Cup Final.
+      </p>
+    </header>
 
-    <div class="card">
-      <label>Nombre del participante</label>
-      <input id="participant" placeholder="Ej. Natalia" required />
-      <label>Email del participante</label>
-      <input id="participantEmail" type="email" placeholder="Ej. nombre@email.com" />
-      <small>Las respuestas se guardan automáticamente en el Google Sheet privado del administrador.</small>
-    </div>
+    <section class="card">
+      <div id="formView">
+        <div class="form-header">
+          <h2>Make your picks</h2>
+          <p>Both semifinal predictions must be completed before submitting.</p>
+        </div>
 
-    <form id="predictionForm">
-      <div id="groups" class="grid"></div>
+        <form id="predictionForm" novalidate>
+          <label class="field-label" for="participantName">Participant name</label>
+          <input
+            class="name-input"
+            id="participantName"
+            name="participantName"
+            type="text"
+            autocomplete="name"
+            maxlength="80"
+            placeholder="Enter your full name"
+            required
+          />
+          <p class="error" id="nameError">Please enter your name.</p>
 
-      <div class="card">
-        <h2>Marca los 8 mejores terceros</h2>
-        <p class="note">Aquí ya no escoges grupos. Cada casilla muestra el <strong>equipo exacto</strong> que seleccionaste como 3º en cada grupo. Solo puedes marcar 8.</p>
-        <p class="third-count">Mejores terceros marcados: <span id="thirdCount">0</span>/8</p>
-        <div id="bestThirds" class="best-grid"></div>
+          <div class="games">
+            <article class="game" data-game="1">
+              <div class="game-top">
+                <div>
+                  <p class="round">Semifinal 1</p>
+                  <p class="date">Tuesday, July 14 · 3:00 PM ET</p>
+                </div>
+                <span class="match-number">Match 101</span>
+              </div>
+
+              <div class="scoreboard">
+                <div class="team">
+                  <span class="flag" aria-hidden="true">🇫🇷</span>
+                  <span class="team-name">France</span>
+                </div>
+
+                <input
+                  class="score-input"
+                  id="game1HomeScore"
+                  aria-label="France predicted score"
+                  type="number"
+                  inputmode="numeric"
+                  min="0"
+                  max="20"
+                  step="1"
+                />
+
+                <span class="dash">–</span>
+
+                <input
+                  class="score-input"
+                  id="game1AwayScore"
+                  aria-label="Spain predicted score"
+                  type="number"
+                  inputmode="numeric"
+                  min="0"
+                  max="20"
+                  step="1"
+                />
+
+                <div class="team away">
+                  <span class="flag" aria-hidden="true">🇪🇸</span>
+                  <span class="team-name">Spain</span>
+                </div>
+              </div>
+
+              <p class="advance-label">Who advances to the Final?</p>
+              <div class="winner-options">
+                <label class="winner-option">
+                  <input type="radio" name="game1Winner" value="France" />
+                  <span>🇫🇷 France</span>
+                </label>
+                <label class="winner-option">
+                  <input type="radio" name="game1Winner" value="Spain" />
+                  <span>🇪🇸 Spain</span>
+                </label>
+              </div>
+
+              <p class="error">
+                Enter both scores and select the team that advances.
+              </p>
+            </article>
+
+            <article class="game" data-game="2">
+              <div class="game-top">
+                <div>
+                  <p class="round">Semifinal 2</p>
+                  <p class="date">Wednesday, July 15 · 3:00 PM ET</p>
+                </div>
+                <span class="match-number">Match 102</span>
+              </div>
+
+              <div class="scoreboard">
+                <div class="team">
+                  <svg class="flag-svg" viewBox="0 0 60 36" role="img" aria-label="Flag of England">
+  <rect width="60" height="36" fill="#ffffff"/>
+  <rect x="25" width="10" height="36" fill="#ce1126"/>
+  <rect y="13" width="60" height="10" fill="#ce1126"/>
+</svg>
+                  <span class="team-name">England</span>
+                </div>
+
+                <input
+                  class="score-input"
+                  id="game2HomeScore"
+                  aria-label="England predicted score"
+                  type="number"
+                  inputmode="numeric"
+                  min="0"
+                  max="20"
+                  step="1"
+                />
+
+                <span class="dash">–</span>
+
+                <input
+                  class="score-input"
+                  id="game2AwayScore"
+                  aria-label="Argentina predicted score"
+                  type="number"
+                  inputmode="numeric"
+                  min="0"
+                  max="20"
+                  step="1"
+                />
+
+                <div class="team away">
+                  <span class="flag" aria-hidden="true">🇦🇷</span>
+                  <span class="team-name">Argentina</span>
+                </div>
+              </div>
+
+              <p class="advance-label">Who advances to the Final?</p>
+              <div class="winner-options">
+                <label class="winner-option">
+                  <input type="radio" name="game2Winner" value="England" />
+                  <span><svg class="flag-svg" viewBox="0 0 60 36" role="img" aria-label="Flag of England">
+  <rect width="60" height="36" fill="#ffffff"/>
+  <rect x="25" width="10" height="36" fill="#ce1126"/>
+  <rect y="13" width="60" height="10" fill="#ce1126"/>
+</svg> England</span>
+                </label>
+                <label class="winner-option">
+                  <input type="radio" name="game2Winner" value="Argentina" />
+                  <span>🇦🇷 Argentina</span>
+                </label>
+              </div>
+
+              <p class="error">
+                Enter both scores and select the team that advances.
+              </p>
+            </article>
+          </div>
+
+          <div class="rules">
+            <strong>Important:</strong> Enter the score after 90 minutes plus
+            stoppage time. Tied scores are allowed. Always select the team you
+            predict will advance after extra time or penalties.
+          </div>
+
+          <button class="submit-btn" id="submitButton" type="submit">
+            Submit semifinal predictions
+          </button>
+
+          <div class="status" id="statusMessage" role="status" aria-live="polite"></div>
+        </form>
       </div>
 
-      <button type="submit" id="submitBtn">Enviar predicción</button>
-      <button type="button" class="secondary" onclick="downloadCSV()">Descargar CSV de respaldo</button>
-      <div id="msg"></div>
-      <textarea id="output" readonly placeholder="Aquí aparecerá el resumen después de enviar o descargar respaldo."></textarea>
-    </form>
-  </div>
+      <div class="confirmation" id="confirmationView">
+        <div class="check">✓</div>
+        <h2>Predictions submitted!</h2>
+        <p>Your semifinal picks have been recorded. Good luck!</p>
+        <button class="another-btn" id="anotherResponse" type="button">
+          Submit another response
+        </button>
+      </div>
+    </section>
 
-<script>
-// Después de publicar Google Apps Script, pega aquí el URL de la Web App.
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzwQRejWXRhBy3-L6vFcKRlpDnSN2bKfNpmWx6uwXuQyRfX3QAkA9q2GinKqhbZO9BY/exec";
+    <p class="footer">World Cup Pool · Semifinal Round</p>
+  </main>
 
-const GROUPS = {
-  A: ['Mexico', 'South Korea', 'South Africa', 'Czechia'],
-  B: ['Canada', 'Switzerland', 'Qatar', 'Bosnia-Herzegovina'],
-  C: ['Brazil', 'Morocco', 'Scotland', 'Haiti'],
-  D: ['USA', 'Paraguay', 'Australia', 'Turkiye'],
-  E: ['Germany', 'Ecuador', 'Ivory Coast', 'Curacao'],
-  F: ['Netherlands', 'Japan', 'Tunisia', 'Sweden'],
-  G: ['Belgium', 'Iran', 'Egypt', 'New Zealand'],
-  H: ['Spain', 'Uruguay', 'Saudi Arabia', 'Cape Verde'],
-  I: ['France', 'Senegal', 'Norway', 'Iraq'],
-  J: ['Argentina', 'Austria', 'Algeria', 'Jordan'],
-  K: ['Portugal', 'Colombia', 'Uzbekistan', 'DR Congo'],
-  L: ['England', 'Croatia', 'Panama', 'Ghana']
-};
+  <script>
+    /*
+      REQUIRED:
+      Replace the text below with your deployed Google Apps Script Web App URL.
+      It normally begins with:
+      https://script.google.com/macros/s/...
+    */
+    const SCRIPT_URL = "PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE";
 
-function optionList(teams, placeholder='Selecciona') {
-  return `<option value="">${placeholder}</option>` + teams.map(t => `<option value="${t}">${t}</option>`).join('');
-}
+    const form = document.getElementById("predictionForm");
+    const submitButton = document.getElementById("submitButton");
+    const statusMessage = document.getElementById("statusMessage");
+    const nameInput = document.getElementById("participantName");
+    const nameError = document.getElementById("nameError");
+    const formView = document.getElementById("formView");
+    const confirmationView = document.getElementById("confirmationView");
+    const anotherResponse = document.getElementById("anotherResponse");
 
-const groupsDiv = document.getElementById('groups');
-Object.entries(GROUPS).forEach(([g, teams]) => {
-  groupsDiv.innerHTML += `
-    <div class="card">
-      <div class="group-title">Grupo ${g}</div>
-      <div class="teams">${teams.join(' · ')}</div>
-      <label>1er lugar</label>
-      <select id="${g}_first" class="group-select">${optionList(teams)}</select>
-      <label>2do lugar</label>
-      <select id="${g}_second" class="group-select">${optionList(teams)}</select>
-      <label>3er lugar</label>
-      <select id="${g}_third" class="third-place-team" disabled>
-        <option value="">Primero escoge 1º y 2º</option>
-      </select>
-      <div class="third-hint" id="${g}_hint">El 3º lugar se limitará a los 2 equipos restantes.</div>
-    </div>`;
-});
+    const games = [
+      {
+        number: 1,
+        matchId: "101",
+        homeTeam: "France",
+        awayTeam: "Spain",
+        date: "2026-07-14",
+        timeET: "3:00 PM ET"
+      },
+      {
+        number: 2,
+        matchId: "102",
+        homeTeam: "England",
+        awayTeam: "Argentina",
+        date: "2026-07-15",
+        timeET: "3:00 PM ET"
+      }
+    ];
 
-const bestThirdsDiv = document.getElementById('bestThirds');
-Object.keys(GROUPS).forEach(g => {
-  bestThirdsDiv.innerHTML += `
-    <label class="best-item disabled" id="best_item_${g}">
-      <input type="checkbox" id="${g}_best" class="best-third-check" disabled />
-      <span class="best-label" id="${g}_best_label">Grupo ${g}: escoge 3º lugar</span>
-    </label>`;
-});
+    function validScore(value) {
+      if (value === "") return false;
+      const score = Number(value);
+      return Number.isInteger(score) && score >= 0 && score <= 20;
+    }
 
-function updateGroup(group) {
-  const teams = GROUPS[group];
-  const firstSel = document.getElementById(`${group}_first`);
-  const secondSel = document.getElementById(`${group}_second`);
-  const thirdSel = document.getElementById(`${group}_third`);
-  const bestCheck = document.getElementById(`${group}_best`);
-  const bestLabel = document.getElementById(`${group}_best_label`);
-  const hint = document.getElementById(`${group}_hint`);
+    function readGame(game) {
+      const homeScore = document.getElementById(
+        `game${game.number}HomeScore`
+      ).value.trim();
 
-  const first = firstSel.value;
-  const second = secondSel.value;
-  const previousThird = thirdSel.value;
+      const awayScore = document.getElementById(
+        `game${game.number}AwayScore`
+      ).value.trim();
 
-  Array.from(firstSel.options).forEach(opt => { opt.disabled = opt.value && opt.value === second; });
-  Array.from(secondSel.options).forEach(opt => { opt.disabled = opt.value && opt.value === first; });
+      const winner = document.querySelector(
+        `input[name="game${game.number}Winner"]:checked`
+      );
 
-  if (first && second && first !== second) {
-    const remaining = teams.filter(t => t !== first && t !== second);
-    thirdSel.innerHTML = optionList(remaining, 'Selecciona 3º lugar');
-    thirdSel.disabled = false;
-    if (remaining.includes(previousThird)) thirdSel.value = previousThird;
-    hint.textContent = `Opciones disponibles para 3º: ${remaining.join(' o ')}`;
-  } else {
-    thirdSel.innerHTML = '<option value="">Primero escoge 1º y 2º distintos</option>';
-    thirdSel.disabled = true;
-    bestCheck.checked = false;
-    hint.textContent = 'El 3º lugar se limitará a los 2 equipos restantes.';
-  }
+      return {
+        matchId: game.matchId,
+        homeTeam: game.homeTeam,
+        awayTeam: game.awayTeam,
+        matchDate: game.date,
+        matchTimeET: game.timeET,
+        homeScore,
+        awayScore,
+        advancingTeam: winner ? winner.value : ""
+      };
+    }
 
-  const third = thirdSel.value;
-  if (third) {
-    bestLabel.textContent = `Grupo ${group}: ${third}`;
-  } else {
-    bestLabel.textContent = `Grupo ${group}: escoge 3º lugar`;
-    bestCheck.checked = false;
-  }
-}
+    function validateForm() {
+      let isValid = true;
+      const participantName = nameInput.value.trim();
 
-function enforceBestThirdLimit() {
-  const checks = Array.from(document.querySelectorAll('.best-third-check'));
-  const checked = checks.filter(c => c.checked).length;
-  document.getElementById('thirdCount').textContent = checked;
+      if (!participantName) {
+        nameError.style.display = "block";
+        nameInput.setAttribute("aria-invalid", "true");
+        isValid = false;
+      } else {
+        nameError.style.display = "none";
+        nameInput.removeAttribute("aria-invalid");
+      }
 
-  checks.forEach(c => {
-    const group = c.id.split('_')[0];
-    const thirdTeam = document.getElementById(`${group}_third`).value;
-    const blockBecauseLimit = !c.checked && checked >= 8;
-    c.disabled = !thirdTeam || blockBecauseLimit;
-    document.getElementById(`best_item_${group}`).classList.toggle('disabled', !thirdTeam || blockBecauseLimit);
-  });
-}
+      games.forEach((game) => {
+        const card = document.querySelector(`[data-game="${game.number}"]`);
+        const prediction = readGame(game);
 
-function updateAll() {
-  Object.keys(GROUPS).forEach(updateGroup);
-  enforceBestThirdLimit();
-}
+        const gameIsValid =
+          validScore(prediction.homeScore) &&
+          validScore(prediction.awayScore) &&
+          Boolean(prediction.advancingTeam);
 
-document.addEventListener('change', function(e) {
-  if (e.target.matches('select, input[type="checkbox"]')) updateAll();
-});
-updateAll();
+        card.classList.toggle("invalid", !gameIsValid);
 
-function collectData() {
-  const participant = document.getElementById('participant').value.trim();
-  const participantEmail = document.getElementById('participantEmail').value.trim();
-  const picks = {};
-  const bestThirds = [];
-  const errors = [];
+        if (!gameIsValid) isValid = false;
+      });
 
-  if (!participant) errors.push('Falta el nombre del participante.');
+      return isValid;
+    }
 
-  Object.keys(GROUPS).forEach(g => {
-    const first = document.getElementById(`${g}_first`).value;
-    const second = document.getElementById(`${g}_second`).value;
-    const third = document.getElementById(`${g}_third`).value;
-    const isBest = document.getElementById(`${g}_best`).checked;
-    const remaining = GROUPS[g].filter(t => t !== first && t !== second);
+    function clearStatus() {
+      statusMessage.className = "status";
+      statusMessage.textContent = "";
+    }
 
-    if (!first || !second) errors.push(`Faltan 1º/2º en el Grupo ${g}.`);
-    if (first && second && first === second) errors.push(`En el Grupo ${g}, el 1º y 2º no pueden ser el mismo equipo.`);
-    if (first && second && first !== second && !third) errors.push(`Falta escoger el 3º lugar exacto en el Grupo ${g}.`);
-    if (third && !remaining.includes(third)) errors.push(`En el Grupo ${g}, el 3º debe ser uno de los dos equipos no elegidos como 1º o 2º.`);
-    if (isBest && !third) errors.push(`Marcaste mejor tercero en el Grupo ${g}, pero falta el equipo exacto.`);
+    function showStatus(type, message) {
+      statusMessage.className = `status ${type}`;
+      statusMessage.textContent = message;
+    }
 
-    picks[g] = { primero: first, segundo: second, tercero: third, terceroClasifica: isBest ? 'SI' : 'NO' };
-    if (isBest && third) bestThirds.push({ grupo: g, equipo: third });
-  });
+    function makePayload() {
+      return {
+        round: "semifinals",
+        participantName: nameInput.value.trim(),
+        submittedAtClient: new Date().toISOString(),
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "",
+        predictions: games.map(readGame)
+      };
+    }
 
-  if (bestThirds.length !== 8) errors.push(`Debes marcar exactamente 8 equipos como mejores terceros. Marcaste ${bestThirds.length}.`);
+    form.addEventListener("input", (event) => {
+      clearStatus();
 
-  return { participant, participantEmail, picks, bestThirds, errors, submittedAt: new Date().toISOString() };
-}
+      if (event.target === nameInput && nameInput.value.trim()) {
+        nameError.style.display = "none";
+        nameInput.removeAttribute("aria-invalid");
+      }
 
-function formatText(data) {
-  let lines = [`Participante: ${data.participant}`, `Email: ${data.participantEmail || ''}`, `Fecha: ${new Date().toLocaleString()}`, '', 'Predicción por grupo:'];
-  Object.entries(data.picks).forEach(([g, p]) => lines.push(`Grupo ${g}: 1) ${p.primero} | 2) ${p.segundo} | 3) ${p.tercero} | Mejor tercero: ${p.terceroClasifica}`));
-  lines.push('', '8 mejores terceros exactos:');
-  data.bestThirds.forEach((x, i) => lines.push(`${i+1}. ${x.equipo} (Grupo ${x.grupo})`));
-  return lines.join('\n');
-}
+      const gameCard = event.target.closest(".game");
+      if (gameCard) gameCard.classList.remove("invalid");
+    });
 
-function formatCSV(data) {
-  const headers = ['Timestamp', 'Participante', 'Email'];
-  const row = [data.submittedAt, data.participant, data.participantEmail || ''];
-  Object.keys(GROUPS).forEach(g => {
-    headers.push(`${g}_Primero`, `${g}_Segundo`, `${g}_Tercero`, `${g}_Tercero_Clasifica`);
-    row.push(data.picks[g].primero, data.picks[g].segundo, data.picks[g].tercero, data.picks[g].terceroClasifica);
-  });
-  headers.push('Mejores_Terceros_Exactos');
-  row.push(data.bestThirds.map(x => `${x.equipo} (Grupo ${x.grupo})`).join('|'));
-  return headers.join(',') + '\n' + row.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',');
-}
+    form.addEventListener("change", (event) => {
+      clearStatus();
+      const gameCard = event.target.closest(".game");
+      if (gameCard) gameCard.classList.remove("invalid");
+    });
 
-function showMessage(text, cls) {
-  const msg = document.getElementById('msg');
-  msg.className = cls;
-  msg.textContent = text;
-}
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      clearStatus();
 
-document.getElementById('predictionForm').addEventListener('submit', async function(e) {
-  e.preventDefault();
-  const data = collectData();
-  if (data.errors.length) { showMessage(data.errors.join(' '), 'error'); return; }
-  if (!SCRIPT_URL || SCRIPT_URL.includes('PASTE_GOOGLE_APPS_SCRIPT')) {
-    showMessage('Falta configurar el URL de Google Apps Script antes de publicar.', 'error');
-    document.getElementById('output').value = formatText(data);
-    return;
-  }
+      if (!validateForm()) {
+        showStatus(
+          "failure",
+          "Please complete your name, both scores, and the advancing team for each match."
+        );
 
-  const submitBtn = document.getElementById('submitBtn');
-  submitBtn.disabled = true;
-  submitBtn.textContent = 'Enviando...';
-  document.getElementById('output').value = formatText(data);
+        const firstInvalid =
+          document.querySelector('[aria-invalid="true"]') ||
+          document.querySelector(".game.invalid input");
 
-  try {
-    await fetch(SCRIPT_URL, {
-  method: 'POST',
-  mode: 'no-cors',
-  headers: {
-    'Content-Type': 'text/plain;charset=utf-8'
-  },
-  body: JSON.stringify(data)
-});
+        if (firstInvalid) firstInvalid.focus();
+        return;
+      }
 
-showMessage('Predicción enviada. Gracias.', 'success');
-submitBtn.textContent = 'Enviado';
-  } catch (err) {
-    showMessage('No se pudo enviar automáticamente. Descarga el CSV de respaldo y avisa al administrador.', 'error');
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Enviar predicción';
-  }
-});
+      if (!SCRIPT_URL.startsWith("https://script.google.com/macros/s/")) {
+        showStatus(
+          "failure",
+          "The page owner still needs to add the Google Apps Script Web App URL."
+        );
+        return;
+      }
 
-function downloadCSV() {
-  const data = collectData();
-  if (data.errors.length) { showMessage(data.errors.join(' '), 'error'); return; }
-  const blob = new Blob([formatCSV(data)], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `predicciones_mundial_2026_${data.participant.replace(/\s+/g,'_')}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
-  document.getElementById('output').value = formatText(data);
-  showMessage('CSV descargado con los 8 equipos exactos.', 'success');
-}
-</script>
+      submitButton.disabled = true;
+      submitButton.textContent = "Submitting…";
+
+      try {
+        /*
+          text/plain avoids the browser's CORS preflight request, which makes
+          this work reliably with Google Apps Script Web Apps.
+        */
+        const response = await fetch(SCRIPT_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify(makePayload())
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || result.status !== "success") {
+          throw new Error(result.message || "Submission failed.");
+        }
+
+        form.reset();
+        formView.style.display = "none";
+        confirmationView.classList.add("show");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } catch (error) {
+        console.error(error);
+        showStatus(
+          "failure",
+          "We could not save your predictions. Please try again. If the problem continues, contact the pool organizer."
+        );
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = "Submit semifinal predictions";
+      }
+    });
+
+    anotherResponse.addEventListener("click", () => {
+      confirmationView.classList.remove("show");
+      formView.style.display = "block";
+      clearStatus();
+      nameInput.focus();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  </script>
 </body>
 </html>
